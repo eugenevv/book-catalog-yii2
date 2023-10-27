@@ -30,6 +30,8 @@ $this->params['breadcrumbs'][] = $this->title;
         ]) ?>
     </p>
 
+    <p><?= Html::img('/images/' . $model->cover_image) ?></p>
+
     <?= DetailView::widget([
         'model' => $model,
         'attributes' => [
@@ -38,7 +40,6 @@ $this->params['breadcrumbs'][] = $this->title;
             'year',
             'description:ntext',
             'isbn',
-            'cover_image',
         ],
     ]) ?>
 

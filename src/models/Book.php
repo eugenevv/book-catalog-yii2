@@ -23,7 +23,7 @@ class Book extends \yii\db\ActiveRecord
     /**
      * @var UploadedFile
      */
-    public $cover_image;
+    public $coverImage;
 
     /**
      * {@inheritdoc}
@@ -86,15 +86,15 @@ class Book extends \yii\db\ActiveRecord
         return new BookQuery(get_called_class());
     }
 
+    /**
+     * @return false|string
+     */
     public function upload()
     {
-        if ($this->validate()) {
-            foreach ($this->imageFiles as $file) {
-                $file->saveAs('uploads/' . $file->baseName . '.' . $file->extension);
-            }
-            return true;
-        } else {
-            return false;
+        foreach ($this->coverImage as $file) {
+            $imageName = md5($file->baseName . time() . rand(1, 100)) . '.' . $file->extension;
+            $file->saveAs(\Yii::getAlias('@webroot') . DIRECTORY_SEPARATOR . 'images' . DIRECTORY_SEPARATOR . $imageName);
         }
+        return $imageName;
     }
 }

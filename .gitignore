@@ -1,2 +1,6 @@
+# phpstorm project files
+.idea
+
 docker/mysql/db-data
 .env.local
+

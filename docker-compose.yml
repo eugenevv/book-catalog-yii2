@@ -1,0 +1,58 @@
+version: '3.7'
+
+services:
+  nginx:
+    build: ./docker/nginx
+    container_name: book-catalog-yii2-nginx
+    ports:
+      - "0.0.0.0:80:80"
+      - "0.0.0.0:443:443"
+    volumes:
+      - ./docker/nginx/certs:/etc/nginx/certs
+      - ./src:/var/www
+    restart: always
+    links:
+      - app
+    networks:
+      php8112_default:
+        ipv4_address: 172.22.12.2
+  mysql:
+    image: 'mysql:5.7'
+    container_name: book-catalog-yii2-mysql
+    ports:
+      - '${DB_PORT:-3306}:3306'
+    environment:
+      MYSQL_ROOT_PASSWORD: '${DB_PASSWORD}'
+      MYSQL_DATABASE: '${DB_NAME}'
+    volumes:
+      - ./docker/mysql/db-data:/var/lib/mysql
+    command: --character-set-server=utf8mb4 --collation-server=utf8mb4_unicode_ci
+    networks:
+      php8112_default:
+        ipv4_address: 172.22.12.3
+  app:
+    build:
+      context: ./
+      dockerfile: ./docker/php/Dockerfile
+    container_name: book-catalog-yii2-app
+    volumes:
+      - ./src:/var/www
+    environment:
+      - DB_HOST=${DB_HOST}
+      - DB_PORT=${DB_PORT}
+      - DB_NAME=${DB_NAME}
+      - DB_USER=${DB_USER}
+      - DB_PASSWORD=${DB_PASSWORD}
+      - YII_ENV_DEV=${YII_ENV_DEV:-false}
+    networks:
+      php8112_default:
+        ipv4_address: 172.22.12.4
+networks:
+  php8112_default:
+    driver: bridge
+    driver_opts:
+      com.docker.network.enable_ipv6: "false"
+    ipam:
+      config:
+        - subnet: 172.22.12.0/24
+          gateway: 172.22.12.1

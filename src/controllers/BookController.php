@@ -71,10 +71,8 @@ class BookController extends Controller
         $model = new Book();
 
         if ($this->request->isPost) {
-            var_dump($this->request->post(), $_FILES);die;
             if ($model->load($this->request->post()) && $model->save()) {
                 if ($model->cover_image) {
-                    var_dump(\Yii::getAlias('@runtime') . $model->cover_image->baseName . '.' . $model->cover_image->extension);die;
                     $model->cover_image->saveAs(\Yii::getAlias('@runtime') . $model->cover_image->baseName . '.' . $model->cover_image->extension);
                 }
 

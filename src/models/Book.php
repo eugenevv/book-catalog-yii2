@@ -16,7 +16,7 @@ use yii\web\UploadedFile;
  * @property string $created_at
  * @property string $updated_at
  *
- * @property BookAuthor[] $bookAuthors
+ * @property Author[] $authors
  */
 class Book extends \yii\db\ActiveRecord
 {
@@ -39,10 +39,10 @@ class Book extends \yii\db\ActiveRecord
     public function rules()
     {
         return [
-            [['title', 'year'], 'required'],
+            [['title', 'year', 'isbn'], 'required'],
             [['year'], 'integer'],
             [['description'], 'string'],
-            [['created_at', 'updated_at'], 'safe'],
+            [['created_at', 'updated_at', 'cover_image'], 'safe'],
             [['title'], 'string', 'max' => 255],
             [['isbn'], 'string', 'max' => 13],
             [['isbn'], 'unique'],
@@ -68,13 +68,13 @@ class Book extends \yii\db\ActiveRecord
     }
 
     /**
-     * Gets query for [[BookAuthors]].
-     *
-     * @return \yii\db\ActiveQuery|BookAuthorQuery
+     * @return \yii\db\ActiveQuery
+     * @throws \yii\base\InvalidConfigException
      */
-    public function getBookAuthors()
+    public function getAuthors()
     {
-        return $this->hasMany(BookAuthor::class, ['book_id' => 'id']);
+        return $this->hasMany(Author::class, ['id' => 'author_id'])
+            ->viaTable('book_author', ['book_id' => 'id']);;
     }
 
     /**
@@ -87,7 +87,7 @@ class Book extends \yii\db\ActiveRecord
     }
 
     /**
-     * @return false|string
+     * @return string
      */
     public function upload()
     {

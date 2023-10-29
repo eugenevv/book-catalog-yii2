@@ -2,6 +2,7 @@
 
 namespace app\controllers;
 
+use app\models\Author;
 use app\models\Book;
 use app\models\BookSearch;
 use yii\filters\VerbFilter;
@@ -58,7 +59,7 @@ class BookController extends Controller
     public function actionView($id)
     {
         return $this->render('view', [
-            'model' => $this->findModel($id),
+            'book' => $this->findModel($id),
         ]);
     }
 
@@ -69,25 +70,117 @@ class BookController extends Controller
      */
     public function actionCreate()
     {
-        $model = new Book();
+        $book = $this->getValidatedBookFromPost();
+        $authors = $this->getValidatedAuthorsFromPost();
 
-        if ($this->request->isPost) {
-            if ($model->load($this->request->post())) {
-                $model->coverImage = UploadedFile::getInstances($model, 'cover_image');
-                $imageName = $model->upload();
-                if ($model->coverImage && $imageName) {
-                    $model->setAttribute('cover_image', $imageName);
-                }
-                if ($model->save()) {
-                    return $this->redirect(['view', 'id' => $model->id]);
-                }
-            }
-        } else {
-            $model->loadDefaultValues();
+        if (!$this->request->isPost) {
+            return $this->render('create', [
+                'book' => $book,
+                'authors' => $authors,
+            ]);
         }
 
-        return $this->render('create', [
-            'model' => $model,
+        if ($book && $authors) {
+            if ($book->save(false)) {
+                foreach ($authors as $author) {
+                    $isNewRecord = $author->isNewRecord;
+                    $author->save(false);
+                    if ($isNewRecord) {
+                        $book->link('authors', $author);
+                    }
+                }
+            }
+        }
+
+        return $this->redirect(['view', 'id' => $book->id]);
+    }
+
+    /**
+     * @param int|null $id
+     * @return Book
+     * @throws NotFoundHttpException
+     */
+    private function getValidatedBookFromPost(int $id = null): Book
+    {
+        $book = $id ? $this->findModel($id) : new Book();
+
+        if ($this->request->isPost) {
+            if ($book->load($this->request->post()) && $book->validate($this->request->post())) {
+                $book->coverImage = UploadedFile::getInstances($book, 'cover_image');
+                $imageName = $book->upload();
+                if ($book->coverImage && $imageName) {
+                    //TODO: сделать удаление старого файла
+                    $book->setAttribute('cover_image', $imageName);
+                }
+                elseif (!$book->isNewRecord) {
+                    $book->setAttribute('cover_image', $book->getOldAttribute('cover_image'));
+                }
+                return $book;
+            }
+        } else {
+            $book->loadDefaultValues();
+        }
+
+        return $book;
+    }
+
+    /**
+     * @param Book|null $book
+     * @return array|Author[]
+     */
+    private function getValidatedAuthorsFromPost(Book $book = null): array
+    {
+        $authors = [];
+        if ($book) {
+            $authors = $book->authors;
+        }
+
+        if (!count($authors)) {
+            $authors = [new Author()];
+        }
+
+        if ($this->request->isPost) {
+            $countFromPost = count(\Yii::$app->request->post('Author', []));
+            $countFromTable = count($authors);
+            for ($i= $countFromTable; $i<$countFromPost; $i++) {
+                $authors[] = new Author();
+            }
+            if (Author::loadMultiple($authors, \Yii::$app->request->post())
+                && Author::validateMultiple($authors)
+            ) {
+                return $authors;
+            }
+        } else {
+            $authors[0]->loadDefaultValues();
+        }
+
+        return $authors;
+    }
+
+    /**
+     * @param int|null $id
+     * @return string
+     * @throws NotFoundHttpException
+     */
+    public function actionAddAuthor(int $id = null)
+    {
+        $book = $this->getValidatedBookFromPost($id);
+        $authors = $this->getValidatedAuthorsFromPost($book);
+
+        if ($book && $authors) {
+            $authors[] = new Author();
+
+            $view = $book->isNewRecord ? 'create' : 'update';
+
+            return $this->render($view, [
+                'book' => $book,
+                'authors' => $authors,
+            ]);
+        }
+
+        return $this->render('view', [
+            'book' => $book,
+            'authors' => $authors,
         ]);
     }
 
@@ -98,17 +191,29 @@ class BookController extends Controller
      * @return string|\yii\web\Response
      * @throws NotFoundHttpException if the model cannot be found
      */
-    public function actionUpdate($id)
+    public function actionUpdate(int $id)
     {
-        $model = $this->findModel($id);
+        $book = $this->getValidatedBookFromPost($id);
+        $authors = $this->getValidatedAuthorsFromPost($book);
 
-        if ($this->request->isPost && $model->load($this->request->post()) && $model->save()) {
-            return $this->redirect(['view', 'id' => $model->id]);
+        if (!$this->request->isPost) {
+            return $this->render('update', [
+                'book' => $book,
+                'authors' => $authors,
+            ]);
         }
 
-        return $this->render('update', [
-            'model' => $model,
-        ]);
+        if ($book->save(false)) {
+            foreach ($authors as $author) {
+                $isNewRecord = $author->isNewRecord;
+                $author->save(false);
+                if ($isNewRecord) {
+                    $book->link('authors', $author);
+                }
+            }
+        }
+
+        return $this->redirect(['view', 'id' => $book->id]);
     }
 
     /**
@@ -120,7 +225,13 @@ class BookController extends Controller
      */
     public function actionDelete($id)
     {
-        $this->findModel($id)->delete();
+        $book = $this->findModel($id);
+        foreach ($book->authors as $author) {
+            $author->delete();
+        }
+        $book->delete();
+
+        // TODO: удаление файла
 
         return $this->redirect(['index']);
     }

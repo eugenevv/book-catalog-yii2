@@ -4,9 +4,9 @@ use yii\helpers\Html;
 use yii\widgets\DetailView;
 
 /** @var yii\web\View $this */
-/** @var \app\models\Book $model */
+/** @var \app\models\Book $book */
 
-$this->title = $model->title;
+$this->title = $book->title;
 $this->params['breadcrumbs'][] = ['label' => 'Books', 'url' => ['index']];
 $this->params['breadcrumbs'][] = $this->title;
 \yii\web\YiiAsset::register($this);
@@ -16,11 +16,11 @@ $this->params['breadcrumbs'][] = $this->title;
     <h1><?= Html::encode($this->title) ?></h1>
 
     <p>
-        <?= Html::a('Update', ['update', 'id' => $model->id], [
+        <?= Html::a('Update', ['update', 'id' => $book->id], [
                 'class' => 'btn btn-primary',
                 'style' => \Yii::$app->user->isGuest ? 'display:none' : 'display:inline-block'
         ]) ?>
-        <?= Html::a('Delete', ['delete', 'id' => $model->id], [
+        <?= Html::a('Delete', ['delete', 'id' => $book->id], [
             'class' => 'btn btn-danger',
             'style' => \Yii::$app->user->isGuest ? 'display:none' : 'display:inline-block',
             'data' => [
@@ -30,16 +30,34 @@ $this->params['breadcrumbs'][] = $this->title;
         ]) ?>
     </p>
 
-    <p><?= Html::img('/images/' . $model->cover_image) ?></p>
+    <?php if ($book->cover_image): ?>
+    <p><?= Html::img('/images/' . $book->cover_image) ?></p>
+    <?php endif; ?>
+
+    <?php
+    $authors = '';
+    for($i = 0; $i<count($book->authors); $i++) {
+        $authors .= $book->authors[$i]->full_name;
+        if ($i < count($book->authors) - 1) {
+            $authors .= ', ';
+        }
+    }
+    ?>
 
     <?= DetailView::widget([
-        'model' => $model,
+        'model' => $book,
         'attributes' => [
             'id',
             'title',
             'year',
             'description:ntext',
             'isbn',
+            [                                                  // name свойство зависимой модели owner
+                'label' => 'Authors',
+                'value' => $authors,
+                'contentOptions' => ['class' => 'bg-red'],     // настройка HTML атрибутов для тега, соответсвующего value
+                'captionOptions' => ['tooltip' => 'Tooltip'],  // настройка HTML атрибутов для тега, соответсвующего label
+            ],
         ],
     ]) ?>
 

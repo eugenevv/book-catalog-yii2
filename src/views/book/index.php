@@ -19,7 +19,7 @@ $this->params['breadcrumbs'][] = $this->title;
     <h1><?= Html::encode($this->title) ?></h1>
 
     <p>
-        <?= Html::a('Create Book', ['create'], ['class' => 'btn btn-success']) ?>
+        <?= Html::a('Create Book', ['create'], ['class' => 'btn btn-success', 'style' => \Yii::$app->user->isGuest ? 'display:none' : 'display:inline-block']) ?>
     </p>
 
     <?php Pjax::begin(); ?>
@@ -38,8 +38,8 @@ $this->params['breadcrumbs'][] = $this->title;
             'isbn',
             [
                 'class' => ActionColumn::className(),
-                'urlCreator' => function ($action, Book $model, $key, $index, $column) {
-                    return Url::toRoute([$action, 'id' => $model->id]);
+                'urlCreator' => function ($action, Book $book, $key, $index, $column) {
+                    return Url::toRoute([$action, 'id' => $book->id]);
                  },
                 'visibleButtons' => [
                     'update' => !\Yii::$app->user->isGuest,

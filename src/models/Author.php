@@ -10,7 +10,7 @@ namespace app\models;
  * @property string $created_at
  * @property string $updated_at
  *
- * @property BookAuthor[] $bookAuthors
+ * @property Book[] $books
  */
 class Author extends \yii\db\ActiveRecord
 {
@@ -48,13 +48,13 @@ class Author extends \yii\db\ActiveRecord
     }
 
     /**
-     * Gets query for [[BookAuthors]].
-     *
-     * @return \yii\db\ActiveQuery|BookAuthorQuery
+     * @return \yii\db\ActiveQuery
+     * @throws \yii\base\InvalidConfigException
      */
-    public function getBookAuthors()
+    public function getBooks()
     {
-        return $this->hasMany(BookAuthor::class, ['author_id' => 'id']);
+        return $this->hasMany(Book::class, ['id' => 'book_id'])
+            ->viaTable('book_author', ['author_id' => 'id']);;
     }
 
     /**

@@ -10,6 +10,8 @@ use yii\data\ActiveDataProvider;
  */
 class BookSearch extends Book
 {
+    public $fullName;
+
     /**
      * {@inheritdoc}
      */
@@ -17,7 +19,7 @@ class BookSearch extends Book
     {
         return [
             [['id', 'year'], 'integer'],
-            [['title', 'description', 'isbn', 'cover_image', 'created_at', 'updated_at'], 'safe'],
+            [['title', 'description', 'isbn', 'cover_image', 'created_at', 'updated_at', 'fullName'], 'safe'],
         ];
     }
 
@@ -57,6 +59,22 @@ class BookSearch extends Book
             return $dataProvider;
         }
 
+        $dataProvider->setSort([
+            'attributes' => [
+                'id',
+                'title',
+                'year',
+                'description',
+                'isbn',
+                'fullName' => [
+                    'asc' => ['full_name' => SORT_ASC],
+                    'desc' => ['full_name' => SORT_DESC],
+                    'label' => 'Full Name',
+                    'default' => SORT_ASC
+                ],
+            ]
+        ]);
+
         // grid filtering conditions
         $query->andFilterWhere([
             'id' => $this->id,
@@ -67,7 +85,9 @@ class BookSearch extends Book
 
         $query->andFilterWhere(['like', 'title', $this->title])
             ->andFilterWhere(['like', 'description', $this->description])
-            ->andFilterWhere(['like', 'isbn', $this->isbn]);
+            ->andFilterWhere(['like', 'isbn', $this->isbn])
+            ->andFilterWhere(['like', 'authors.full_name', $this->fullName])
+        ;
 
         return $dataProvider;
     }

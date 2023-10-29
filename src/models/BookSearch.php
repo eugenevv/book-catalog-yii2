@@ -47,6 +47,8 @@ class BookSearch extends Book
             'query' => $query,
         ]);
 
+        $query->joinWith(['authors' => function($query) { $query->from(['authors' => Author::tableName()]); }]);
+
         $this->load($params);
 
         if (!$this->validate()) {
@@ -65,8 +67,7 @@ class BookSearch extends Book
 
         $query->andFilterWhere(['like', 'title', $this->title])
             ->andFilterWhere(['like', 'description', $this->description])
-            ->andFilterWhere(['like', 'isbn', $this->isbn])
-            ->andFilterWhere(['like', 'cover_image', $this->cover_image]);
+            ->andFilterWhere(['like', 'isbn', $this->isbn]);
 
         return $dataProvider;
     }

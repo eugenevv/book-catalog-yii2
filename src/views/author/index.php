@@ -18,7 +18,7 @@ $this->params['breadcrumbs'][] = $this->title;
     <h1><?= Html::encode($this->title) ?></h1>
 
     <p>
-        <?= Html::a('Create Author', ['create'], ['class' => 'btn btn-success']) ?>
+        <?= Html::a('Create Author', ['create'], ['class' => 'btn btn-success', 'style' => Yii::$app->user->isGuest ? 'display:none' : 'display:inline-block']) ?>
     </p>
 
     <?php // echo $this->render('_search', ['model' => $searchModel]); ?>
@@ -31,13 +31,15 @@ $this->params['breadcrumbs'][] = $this->title;
 
             'id',
             'full_name',
-            'created_at',
-            'updated_at',
             [
                 'class' => ActionColumn::className(),
                 'urlCreator' => function ($action, Author $model, $key, $index, $column) {
                     return Url::toRoute([$action, 'id' => $model->id]);
-                 }
+                 },
+                'visibleButtons' => [
+                    'update' => !Yii::$app->user->isGuest,
+                    'delete' => !Yii::$app->user->isGuest,
+                ],
             ],
         ],
     ]); ?>

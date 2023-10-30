@@ -10,7 +10,7 @@ use yii\data\ActiveDataProvider;
  */
 class BookSearch extends Book
 {
-    public $fullName;
+    public $authorName;
 
     /**
      * {@inheritdoc}
@@ -19,7 +19,7 @@ class BookSearch extends Book
     {
         return [
             [['id', 'year'], 'integer'],
-            [['title', 'description', 'isbn', 'cover_image', 'created_at', 'updated_at', 'fullName'], 'safe'],
+            [['title', 'description', 'isbn', 'cover_image', 'created_at', 'updated_at', 'authorName'], 'safe'],
         ];
     }
 
@@ -66,7 +66,7 @@ class BookSearch extends Book
                 'year',
                 'description',
                 'isbn',
-                'fullName' => [
+                'authorName' => [
                     'asc' => ['full_name' => SORT_ASC],
                     'desc' => ['full_name' => SORT_DESC],
                     'label' => 'Full Name',
@@ -86,7 +86,7 @@ class BookSearch extends Book
         $query->andFilterWhere(['like', 'title', $this->title])
             ->andFilterWhere(['like', 'description', $this->description])
             ->andFilterWhere(['like', 'isbn', $this->isbn])
-            ->andFilterWhere(['like', 'authors.full_name', $this->fullName])
+            ->andFilterWhere(['like', 'authors.full_name', $this->authorName])
         ;
 
         return $dataProvider;

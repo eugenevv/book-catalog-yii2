@@ -41,7 +41,7 @@ $this->params['breadcrumbs'][] = $this->title;
             'isbn',
             [
                     'class' => DataColumn::class,
-                    'attribute' => 'fullName',
+                    'attribute' => 'authorName',
                     'value' => function($data) {
                         if (count($data->authors)) {
                             /** @var Author $item */

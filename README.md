@@ -33,9 +33,13 @@
 
     docker-compose up -d
 
-Устанавливаем зависимости композера и запускаем триггеры
+Устанавливаем зависимости композера
 
     docker exec -it book-catalog-yii2-app composer install
+
+Устанавливаем доступы на дирректории
+
+    docker exec -it book-catalog-yii2-app composer run-script post-install-cmd
 
 Выполняем миграции
 
